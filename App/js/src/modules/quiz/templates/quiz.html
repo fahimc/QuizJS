@@ -1,0 +1,10 @@
+<div class="quiz">
+	<h1>Question {{questionNumber}}</h1>
+	<p>{{question.title}}</p>
+	<div class="form-group" ng-repeat="option in question.options">
+		<label>{{option}}</label>
+		<input type="checkbox" name="option" value="$index" >
+		
+	</div>
+
+</div>
