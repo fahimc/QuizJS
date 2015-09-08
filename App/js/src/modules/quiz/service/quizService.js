@@ -1,11 +1,13 @@
 'use strict';
 
 angular.module('quiz').factory('quizService',function(){
+	var _questionData;
 
 	var Service=
 	{
+		index:0,
 		get:function(){
-			return {
+			_questionData = {
 				questions:[
 				{
 					title:"Inside which HTML element do we put the JavaScript?",
@@ -22,6 +24,26 @@ angular.module('quiz').factory('quizService',function(){
 					answer:3
 				}]
 			};
+
+			return _questionData.questions[this.index];
+		},
+		next:function(){
+				if(this.index+1 >=_questionData.questions.length)
+				{
+					return null;
+				}else{
+					this.index++;
+					return _questionData.questions[this.index];
+				}
+		},
+		back:function(){
+				if(this.index-1 <0)
+				{
+					return null;
+				}else{
+					this.index--;
+					return _questionData.questions[this.index];
+				}
 		}
 	};
 

@@ -2,9 +2,11 @@
 	<h1>Question {{questionNumber}}</h1>
 	<p>{{question.title}}</p>
 	<div class="form-group" ng-repeat="option in question.options">
-		<label>{{option}}</label>
-		<input type="checkbox" name="option" value="$index" >
-		
+		<label for="inputPassword3" class="col-sm-2 control-label">{{option}}</label>
+		<div class="col-sm-10">
+			<input type="checkbox" class="form-control"  name="option" value="$index" >
+		</div>
 	</div>
-
+	<a href="#" class="btn btn-default" disabled="{{questionNumber<=1?'disabled':''}}" ng-click="onBack()">BACK</a>
+	<a href="#" class="btn btn-primary" ng-click="onSubmit()">SUBMIT</a>
 </div>
