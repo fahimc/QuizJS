@@ -258,37 +258,87 @@ angular.module('app').controller('appController',function($scope,$rootScope){
 	var Controller=
 	{
 		init:function(){
+			document.onkeypress = function (event) {
+				event = (event || window.event);
+				if (event.keyCode == 123) {
+           //alert('No F-12');
+           return false;
+       }
+   }
+   document.onmousedown = function (event) {
+   	event = (event || window.event);
+   	if (event.keyCode == 123) {
+            //alert('No F-keys');
+            return false;
+        }
+    }
+    document.onkeydown = function (event) {
+    	event = (event || window.event);
+    	if (event.keyCode == 123) {
+            //alert('No F-keys');
+            return false;
+        }
+    }
+    document.onmousedown=disableclick;
+    status="Right Click Disabled";
+    function disableclick(event)
+    {
+    	if(event.button==2)
+    	{
+    		
+    		return false;    
+    	}
+    }
 
-		}
-	};
+    document.body.oncontextmenu=function(){
+    	return false;
+    }
+}
+};
 
-	Controller.init();
+Controller.init();
 
-	return Controller;
+return Controller;
 
 });
 
 'use strict';
 
-angular.module('quiz').controller('quizController',function($scope,quizService){
+angular.module('quiz').controller('quizController',function($scope,quizService,$element){
 
 	var Controller=
 	{
+		isDisabled:true,
 		init:function(){
 			var collection =  quizService.get();
 			this.updateQuestion(collection);
 			$scope.onSubmit = this.onSubmit.bind(this);
 			$scope.onBack = this.onBack.bind(this);
-
+			$scope.isDisabled = false;
 		},
 		updateQuestion:function(collection){
-			$scope.questionNumber = quizService.index+1;
+			$scope.questionNumber = quizService.index+1 +" of "+ quizService.length();
 			$scope.question =collection;
 		},
+		getAnswers:function(){
+			var answers=[];
+			var inputs = $element[0].querySelectorAll('input');
+
+			for(var a=0;a<inputs.length;a++){
+					var input = inputs[a];
+					if(input.checked)
+					{
+						answers.push(input.value);
+					}
+			}
+			quizService.answer($scope.question .id,answers);
+		},
 		onSubmit:function(){
+			this.getAnswers();
 			var nextQuestion = quizService.next();
 			if(nextQuestion){
 				this.updateQuestion(nextQuestion);
+				$scope.isDisabled = false;
 			}
 		},
 		onBack:function(){
@@ -312,7 +362,8 @@ angular.module('quiz').directive('quiz', function () {
 		restrict: 'E',
 		replace: true,
 		templateUrl: 'modules/quiz/templates/quiz.html',
-		scope: {},
+		scope: {
+		},
 		controller: 'quizController'
 	}
 });
@@ -321,6 +372,7 @@ angular.module('quiz').directive('quiz', function () {
 
 angular.module('quiz').factory('quizService',function(){
 	var _questionData;
+	var userAnswers={};
 
 	var Service=
 	{
@@ -333,18 +385,25 @@ angular.module('quiz').factory('quizService',function(){
 					options:[
 					"<scripting>","<js>","<javascript>","<script>"
 					],
-					answer:3
+					id:1234
 				},
 				{
 					title:"What is the correct JavaScript syntax to change the content of the HTML element below?<br><br><p id=\"demo\">This is a demonstration.</p>",
 					options:[
 					'document.getElementByName("p").innerHTML = "Hello World!";','#demo.innerHTML = "Hello World!";','document.getElementById("demo").innerHTML = "Hello World!";'
 					],
-					answer:3
+					id:567
 				}]
 			};
 
 			return _questionData.questions[this.index];
+		},
+		length:function(){
+			return _questionData.questions.length;
+		},
+		answer:function(id,answers){
+			userAnswers[id]=answers;
+			console.log(userAnswers);
 		},
 		next:function(){
 				if(this.index+1 >=_questionData.questions.length)
@@ -410,7 +469,7 @@ angular.module('app').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('modules/quiz/templates/quiz.html',
-    "<div class=\"quiz\"><h1>Question {{questionNumber}}</h1><p>{{question.title}}</p><div class=\"form-group\" ng-repeat=\"option in question.options\"><label for=\"inputPassword3\" class=\"col-sm-2 control-label\">{{option}}</label><div class=\"col-sm-10\"><input type=\"checkbox\" class=\"form-control\" name=\"option\" value=\"$index\"></div></div><a href=\"#\" class=\"btn btn-default\" disabled ng-click=\"onBack()\">BACK</a> <a href=\"#\" class=\"btn btn-primary\" ng-click=\"onSubmit()\">SUBMIT</a></div>"
+    "<div class=\"quiz\"><h1>Question {{questionNumber}}</h1><p>{{question.title}}</p><div class=\"well\"><ul ng-repeat=\"option in question.options\"><li><label for=\"inputPassword3\" class=\"control-label\">{{option}}</label></li><li><input type=\"checkbox\" name=\"option\" value=\"{{$index}}\"></li></ul></div><div class=\"controls\"><button class=\"btn btn-default\" ng-disabled=\"isDisabled\" ng-click=\"onBack()\">Back</button> <a href=\"#\" class=\"next btn btn-primary\" ng-click=\"onSubmit()\">Next</a></div></div>"
   );
 
 
