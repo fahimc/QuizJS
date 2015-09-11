@@ -1,2 +1,41 @@
 .quiz{
+	padding:20px;
+	max-width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 80px;
+	ul{
+		list-style: none;
+		li{
+			display: inline-block;
+			&:first-child{
+				clear: both;
+			}
+			&:nth-child(2){
+				float: right;
+			}	
+		}
+	}
+
+	.next
+	{
+		float: right;
+	}
+
+	.well{
+		background-color: #fff;
+		color: #999;
+	}
+
+	.controls{
+		position: absolute;
+		bottom: 0px;
+		padding: 20px;
+		padding-left: 0px;
+		padding-right: 40px;
+		margin-left: auto;
+		margin-right: auto;
+		max-width: 600px;
+		width: 100%;
+	}
 }

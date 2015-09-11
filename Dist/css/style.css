@@ -96,3 +96,40 @@ ICONS
   content: '\e801';
 }
 /* '' */
+.quiz {
+  padding: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 80px;
+}
+.quiz ul {
+  list-style: none;
+}
+.quiz ul li {
+  display: inline-block;
+}
+.quiz ul li:first-child {
+  clear: both;
+}
+.quiz ul li:nth-child(2) {
+  float: right;
+}
+.quiz .next {
+  float: right;
+}
+.quiz .well {
+  background-color: #fff;
+  color: #999;
+}
+.quiz .controls {
+  position: absolute;
+  bottom: 0px;
+  padding: 20px;
+  padding-left: 0px;
+  padding-right: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 600px;
+  width: 100%;
+}

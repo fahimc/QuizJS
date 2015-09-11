@@ -119,7 +119,7 @@ watch: {
     }
   },
   templates: {
-    files: 'app/js/**/*.html',
+    files: 'App/js/src/**/*.html',
     tasks: ['ngtemplates','copy:js'],
     options: {
       interrupt: false,

@@ -5,7 +5,8 @@ angular.module('quiz').directive('quiz', function () {
 		restrict: 'E',
 		replace: true,
 		templateUrl: 'modules/quiz/templates/quiz.html',
-		scope: {},
+		scope: {
+		},
 		controller: 'quizController'
 	}
 });
