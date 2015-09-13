@@ -230,17 +230,25 @@ function(){this.$get=function(){return{}}});n.directive("ngView",x);n.directive(
 
 'use strict';
 
+angular.module('login', []);
+
+'use strict';
+
 angular.module('quiz', []);
 
 'use strict';
 
 angular.module('titleBar', []);
 
-var app = angular.module('app', ['ngRoute','titleBar','quiz']);
+var app = angular.module('app', ['ngRoute','titleBar','quiz','login']);
 
 app.config(['$routeProvider',
 	function ($routeProvider) {
 		$routeProvider.when('/', {
+			controller: 'appController',
+			templateUrl: 'modules/views/loginView.html'
+		})
+		.when('/main', {
 			controller: 'appController',
 			templateUrl: 'modules/views/appView.html'
 		})
@@ -304,17 +312,140 @@ return Controller;
 
 'use strict';
 
-angular.module('quiz').controller('quizController',function($scope,quizService,$element){
+angular.module('app').factory('loginService',function(){
+	var userDetails={};
+	var loggedIn=false; 
+	var Service=
+	{
+		setUserDetails:function(fname,lname,email){
+			userDetails.fName = fname;
+			userDetails.lName = lname;
+			userDetails.email = email;
+
+			loggedIn=true;
+		},
+		isLoggedIn:function(){
+			return loggedIn;
+		}
+	};
+
+
+	return Service;
+
+});
+
+'use strict';
+
+angular.module('login').controller('loginController',function($scope,loginService,$location){
+
+	var Controller=
+	{
+		init:function(){
+			this.getLocation();
+			$scope.onStart= this.onStart.bind(this);
+			$scope.onFocus= this.onFocus.bind(this);
+		},
+		getLocation:function(){
+			if ("geolocation" in navigator) {
+				var wpid = navigator.geolocation.watchPosition(this.geoSuccess.bind(this), this.geoError.bind(this));
+				navigator.geolocation.getCurrentPosition(function(position) {
+					console.log(position.coords.latitude, position.coords.longitude);
+				});
+			} else {
+
+			}
+		},
+		geoSuccess:function(){
+
+		},
+		geoError:function(){
+
+		},
+		onStart:function(){
+			this.vaidate();
+		},
+		onFocus:function(type){
+			switch(type){
+				case 'fn':
+				$scope.fnErrorClass ="";
+				break;
+				case 'ln':
+				$scope.lnErrorClass ="";
+				break;
+				case 'e':
+				$scope.eErrorClass ="";
+				break;
+			}
+		},
+		vaidate:function(){
+			var error = false;
+			if(!$scope.fName || !$scope.fName.trim()){
+				$scope.fnErrorClass = "has-error";
+				error=true;
+			}else{
+				$scope.fnErrorClass ="";
+			}
+			if(!$scope.lName || !$scope.lName.trim()){
+				$scope.lnErrorClass = "has-error";
+				error=true;
+			}else{
+				$scope.lnErrorClass ="";
+			}
+			if(!$scope.email || !$scope.email.trim() || !this.validateEmail($scope.email)){
+				$scope.eErrorClass = "has-error";
+				error=true;
+			}else{
+				$scope.eErrorClass ="";
+			}
+
+			if(!error){
+				loginService.setUserDetails($scope.fName.trim(),$scope.lName.trim(),$scope.email.trim());
+				$location.path('/main');
+			}
+		},
+		validateEmail:function(email) {
+			var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+			return re.test(email);
+		}
+	};
+
+	Controller.init();
+
+	return Controller;
+
+});
+
+'use strict';
+
+angular.module('login').directive('login', function () {
+	return {
+		restrict: 'E',
+		replace: true,
+		templateUrl: 'modules/login/templates/login.html',
+		scope: {},
+		controller: 'loginController'
+	}
+});
+
+'use strict';
+
+angular.module('quiz').controller('quizController',function($scope,quizService,$element,loginService,$location){
 
 	var Controller=
 	{
 		isDisabled:true,
 		init:function(){
+			this.checkLogin();
 			var collection =  quizService.get();
 			this.updateQuestion(collection);
 			$scope.onSubmit = this.onSubmit.bind(this);
 			$scope.onBack = this.onBack.bind(this);
 			$scope.isDisabled = false;
+		},
+		checkLogin:function(){
+			if(!loginService.isLoggedIn()){
+				$location.path("/");
+			}
 		},
 		updateQuestion:function(collection){
 			$scope.questionNumber = quizService.index+1 +" of "+ quizService.length();
@@ -370,7 +501,7 @@ angular.module('quiz').directive('quiz', function () {
 
 'use strict';
 
-angular.module('quiz').factory('quizService',function(){
+angular.module('quiz').factory('quizService',function($http){
 	var _questionData;
 	var userAnswers={};
 
@@ -378,6 +509,12 @@ angular.module('quiz').factory('quizService',function(){
 	{
 		index:0,
 		get:function(){
+			$http.get('/service/getQuestions').
+			then(function(response) {
+				console.log(response);
+			}, function(response) {
+
+			});
 			_questionData = {
 				questions:[
 				{
@@ -406,22 +543,22 @@ angular.module('quiz').factory('quizService',function(){
 			console.log(userAnswers);
 		},
 		next:function(){
-				if(this.index+1 >=_questionData.questions.length)
-				{
-					return null;
-				}else{
-					this.index++;
-					return _questionData.questions[this.index];
-				}
+			if(this.index+1 >=_questionData.questions.length)
+			{
+				return null;
+			}else{
+				this.index++;
+				return _questionData.questions[this.index];
+			}
 		},
 		back:function(){
-				if(this.index-1 <0)
-				{
-					return null;
-				}else{
-					this.index--;
-					return _questionData.questions[this.index];
-				}
+			if(this.index-1 <0)
+			{
+				return null;
+			}else{
+				this.index--;
+				return _questionData.questions[this.index];
+			}
 		}
 	};
 
@@ -468,6 +605,11 @@ angular.module('titleBar').directive('titleBar', function () {
 angular.module('app').run(['$templateCache', function($templateCache) {
   'use strict';
 
+  $templateCache.put('modules/login/templates/login.html',
+    "<div class=\"login\"><div class=\"well\"><form class=\"form-horizontal\"><fieldset><legend>Your Details</legend><div class=\"form-group {{fnErrorClass}}\"><label for=\"inputFName\" class=\"col-lg-2 control-label\">First Name</label><div class=\"col-lg-10\"><input type=\"text\" class=\"form-control\" id=\"inputFName\" placeholder=\"First Name\" ng-model=\"fName\" ng-focus=\"onFocus('fn')\"></div></div><div class=\"form-group {{lnErrorClass}}\"><label for=\"inputLName\" class=\"col-lg-2 control-label\">Last Name</label><div class=\"col-lg-10\"><input type=\"text\" class=\"form-control\" id=\"inputLName\" placeholder=\"Last Name\" ng-model=\"lName\" ng-focus=\"onFocus('ln')\"></div></div><div class=\"form-group {{eErrorClass}}\"><label for=\"inputEmail\" class=\"col-lg-2 control-label\">Email</label><div class=\"col-lg-10\"><input type=\"text\" class=\"form-control\" id=\"inputEmail\" placeholder=\"Email\" ng-model=\"email\" ng-focus=\"onFocus('e')\"></div></div><div class=\"form-group\"><div class=\"col-lg-10 col-lg-offset-2\"><button type=\"submit\" class=\"btn btn-primary\" ng-click=\"onStart()\">Start</button></div></div></fieldset></form></div></div>"
+  );
+
+
   $templateCache.put('modules/quiz/templates/quiz.html',
     "<div class=\"quiz\"><h1>Question {{questionNumber}}</h1><p>{{question.title}}</p><div class=\"well\"><ul ng-repeat=\"option in question.options\"><li><label for=\"inputPassword3\" class=\"control-label\">{{option}}</label></li><li><input type=\"checkbox\" name=\"option\" value=\"{{$index}}\"></li></ul></div><div class=\"controls\"><button class=\"btn btn-default\" ng-disabled=\"isDisabled\" ng-click=\"onBack()\">Back</button> <a href=\"#\" class=\"next btn btn-primary\" ng-click=\"onSubmit()\">Next</a></div></div>"
   );
@@ -480,6 +622,11 @@ angular.module('app').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('modules/views/appView.html',
     "<quiz></quiz>"
+  );
+
+
+  $templateCache.put('modules/views/loginView.html',
+    "<login></login>"
   );
 
 }]);

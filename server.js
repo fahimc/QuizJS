@@ -1,17 +1,27 @@
 var express = require('express');
 var nodemailer = require('nodemailer');
 var bodyParser = require('body-parser');
+var questions = require('./Server/Questions.js').Questions;
+var database = require('./Server/Database.js').Database;
 var app = express();
 var path = require('path');
+
+database.init();
 
 app.use(express.static(__dirname + '/Dist'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
-  extended: true
+	extended: true
 }));
+app.get('/service/getQuestions', function(req, res) {
+	var host = req.get('host');
+	var userIP = req.socket.remoteAddress;
+	res.setHeader('Content-Type', 'application/json');
+	database.get(10,function(collection){
+    res.send(JSON.stringify(collection));
+	});
+});
 app.post('/service/mailer', function(req, res) {
-
-	console.log(req.body);
 
 	var transporter = nodemailer.createTransport({
 		service: 'Gmail',
@@ -31,7 +41,7 @@ var mailOptions = {
     subject: 'Quiz Test Results', // Subject line
     text: 'Here is the results', // plaintext body
     html: '<b>Here is the results</b>' // html body
-  };
+};
 
 // send mail with defined transport object
 transporter.sendMail(mailOptions, function(error, info){

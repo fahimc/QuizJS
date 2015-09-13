@@ -1,16 +1,22 @@
 'use strict';
 
-angular.module('quiz').controller('quizController',function($scope,quizService,$element){
+angular.module('quiz').controller('quizController',function($scope,quizService,$element,loginService,$location){
 
 	var Controller=
 	{
 		isDisabled:true,
 		init:function(){
+			this.checkLogin();
 			var collection =  quizService.get();
 			this.updateQuestion(collection);
 			$scope.onSubmit = this.onSubmit.bind(this);
 			$scope.onBack = this.onBack.bind(this);
 			$scope.isDisabled = false;
+		},
+		checkLogin:function(){
+			if(!loginService.isLoggedIn()){
+				$location.path("/");
+			}
 		},
 		updateQuestion:function(collection){
 			$scope.questionNumber = quizService.index+1 +" of "+ quizService.length();

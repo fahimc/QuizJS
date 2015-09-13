@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('quiz').factory('quizService',function(){
+angular.module('quiz').factory('quizService',function($http){
 	var _questionData;
 	var userAnswers={};
 
@@ -8,6 +8,12 @@ angular.module('quiz').factory('quizService',function(){
 	{
 		index:0,
 		get:function(){
+			$http.get('/service/getQuestions').
+			then(function(response) {
+				console.log(response);
+			}, function(response) {
+
+			});
 			_questionData = {
 				questions:[
 				{
@@ -36,22 +42,22 @@ angular.module('quiz').factory('quizService',function(){
 			console.log(userAnswers);
 		},
 		next:function(){
-				if(this.index+1 >=_questionData.questions.length)
-				{
-					return null;
-				}else{
-					this.index++;
-					return _questionData.questions[this.index];
-				}
+			if(this.index+1 >=_questionData.questions.length)
+			{
+				return null;
+			}else{
+				this.index++;
+				return _questionData.questions[this.index];
+			}
 		},
 		back:function(){
-				if(this.index-1 <0)
-				{
-					return null;
-				}else{
-					this.index--;
-					return _questionData.questions[this.index];
-				}
+			if(this.index-1 <0)
+			{
+				return null;
+			}else{
+				this.index--;
+				return _questionData.questions[this.index];
+			}
 		}
 	};
 

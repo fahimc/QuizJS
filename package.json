@@ -16,6 +16,7 @@
     "grunt-angular-templates":"*",
     "grunt-nodemon":"*",
     "nodemailer":"*",
+    "nedb":"*",
     "body-parser":"*"
   }
 }

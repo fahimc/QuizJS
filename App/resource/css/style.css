@@ -133,3 +133,14 @@ ICONS
   max-width: 600px;
   width: 100%;
 }
+.login .well {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  background-color: #fff;
+  color: #999;
+}
+.login button {
+  float: right;
+}
