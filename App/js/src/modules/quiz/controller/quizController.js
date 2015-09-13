@@ -7,19 +7,23 @@ angular.module('quiz').controller('quizController',function($scope,quizService,$
 		isDisabled:true,
 		init:function(){
 			this.checkLogin();
-			var collection =  quizService.get();
-			this.updateQuestion(collection);
-			$scope.onSubmit = this.onSubmit.bind(this);
-			$scope.onBack = this.onBack.bind(this);
-			$scope.isDisabled = false;
 		},
 		checkLogin:function(){
 			if(!loginService.isLoggedIn()){
 				$location.path("/");
+			}else{
+				this.load();
 			}
+		},
+		load:function(){
+			quizService.get(this.updateQuestion.bind(this));
+			$scope.onSubmit = this.onSubmit.bind(this);
+			$scope.onBack = this.onBack.bind(this);
+			$scope.isDisabled = false;
 		},
 		updateQuestion:function(collection){
 			$scope.questionNumber = quizService.index+1 +" of "+ quizService.length();
+			console.log(collection);
 			$scope.question =collection;
 		},
 		getAnswers:function(){
@@ -27,13 +31,14 @@ angular.module('quiz').controller('quizController',function($scope,quizService,$
 			var inputs = $element[0].querySelectorAll('input');
 
 			for(var a=0;a<inputs.length;a++){
-					var input = inputs[a];
-					if(input.checked)
-					{
-						answers.push(input.value);
-					}
+				var input = inputs[a];
+				if(input.checked)
+				{
+					answers.push(input.value);
+					input.checked=false;
+				}
 			}
-			quizService.answer($scope.question .id,answers);
+			quizService.answer($scope.question._id,answers);
 		},
 		onSubmit:function(){
 			this.getAnswers();

@@ -436,19 +436,23 @@ angular.module('quiz').controller('quizController',function($scope,quizService,$
 		isDisabled:true,
 		init:function(){
 			this.checkLogin();
-			var collection =  quizService.get();
-			this.updateQuestion(collection);
-			$scope.onSubmit = this.onSubmit.bind(this);
-			$scope.onBack = this.onBack.bind(this);
-			$scope.isDisabled = false;
 		},
 		checkLogin:function(){
 			if(!loginService.isLoggedIn()){
 				$location.path("/");
+			}else{
+				this.load();
 			}
+		},
+		load:function(){
+			quizService.get(this.updateQuestion.bind(this));
+			$scope.onSubmit = this.onSubmit.bind(this);
+			$scope.onBack = this.onBack.bind(this);
+			$scope.isDisabled = false;
 		},
 		updateQuestion:function(collection){
 			$scope.questionNumber = quizService.index+1 +" of "+ quizService.length();
+			console.log(collection);
 			$scope.question =collection;
 		},
 		getAnswers:function(){
@@ -456,13 +460,14 @@ angular.module('quiz').controller('quizController',function($scope,quizService,$
 			var inputs = $element[0].querySelectorAll('input');
 
 			for(var a=0;a<inputs.length;a++){
-					var input = inputs[a];
-					if(input.checked)
-					{
-						answers.push(input.value);
-					}
+				var input = inputs[a];
+				if(input.checked)
+				{
+					answers.push(input.value);
+					input.checked=false;
+				}
 			}
-			quizService.answer($scope.question .id,answers);
+			quizService.answer($scope.question._id,answers);
 		},
 		onSubmit:function(){
 			this.getAnswers();
@@ -502,38 +507,22 @@ angular.module('quiz').directive('quiz', function () {
 'use strict';
 
 angular.module('quiz').factory('quizService',function($http){
-	var _questionData;
+	var _questionData={};
 	var userAnswers={};
 
 	var Service=
 	{
 		index:0,
-		get:function(){
+		get:function(callback){
+			var _this = this;
 			$http.get('/service/getQuestions').
 			then(function(response) {
-				console.log(response);
+				_questionData.questions=response.data;
+				callback(_questionData.questions[_this.index]);
 			}, function(response) {
 
 			});
-			_questionData = {
-				questions:[
-				{
-					title:"Inside which HTML element do we put the JavaScript?",
-					options:[
-					"<scripting>","<js>","<javascript>","<script>"
-					],
-					id:1234
-				},
-				{
-					title:"What is the correct JavaScript syntax to change the content of the HTML element below?<br><br><p id=\"demo\">This is a demonstration.</p>",
-					options:[
-					'document.getElementByName("p").innerHTML = "Hello World!";','#demo.innerHTML = "Hello World!";','document.getElementById("demo").innerHTML = "Hello World!";'
-					],
-					id:567
-				}]
-			};
-
-			return _questionData.questions[this.index];
+			
 		},
 		length:function(){
 			return _questionData.questions.length;
@@ -611,7 +600,7 @@ angular.module('app').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('modules/quiz/templates/quiz.html',
-    "<div class=\"quiz\"><h1>Question {{questionNumber}}</h1><p>{{question.title}}</p><div class=\"well\"><ul ng-repeat=\"option in question.options\"><li><label for=\"inputPassword3\" class=\"control-label\">{{option}}</label></li><li><input type=\"checkbox\" name=\"option\" value=\"{{$index}}\"></li></ul></div><div class=\"controls\"><button class=\"btn btn-default\" ng-disabled=\"isDisabled\" ng-click=\"onBack()\">Back</button> <a href=\"#\" class=\"next btn btn-primary\" ng-click=\"onSubmit()\">Next</a></div></div>"
+    "<div class=\"quiz\"><h1>Question {{questionNumber}}</h1><p>{{question.title}}</p><div class=\"well\"><ul ng-repeat=\"option in question.options\"><li><label for=\"inputPassword3\" class=\"control-label\">{{option}}</label></li><li><input type=\"checkbox\" name=\"option\" value=\"{{$index}}\"></li></ul></div><div class=\"controls\"><button class=\"btn btn-default\" ng-disabled=\"isDisabled\" ng-click=\"onBack()\">Back</button> <a class=\"next btn btn-primary\" ng-click=\"onSubmit()\">Next</a></div></div>"
   );
 
 
